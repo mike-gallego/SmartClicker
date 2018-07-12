@@ -19,7 +19,7 @@ import pyautogui as ms
 
 # Initialize the window
 window = Tk()
-window.title("Smart Clicker Version 0.2.0")
+window.title("Smart Clicker Version 0.3.0")
 window.geometry('800x300')
 
 # Controller object to get mouse position
@@ -36,6 +36,8 @@ directions = StringVar()
 number_of_clicks = StringVar()
 interval_range = StringVar()
 input_clicks = StringVar()
+area_text_width = StringVar()
+area_text_height = StringVar()
 
 # Placeholder spread of cursor values
 targeted_mouse_area = None
@@ -80,14 +82,26 @@ input_interval_y = Entry(window, width=3)
 input_interval_y.insert(END, '.7')
 input_interval_y.place(x=485, y=135, anchor="center")
 
-display_location = Label(window, textvariable=label_set_location).place(x=350, y=165, anchor="center")
-set_location = Label(window, textvariable=string_set_location).place(x=450, y=165, anchor="center")
+label_area_text_width = Label(window, textvariable=area_text_width).place(x=350, y=165, anchor="center")
+label_area_width = Entry(window, width=3)
+label_area_width.insert(END, '1')
+label_area_width.place(x=450, y=165, anchor="center")
+
+label_area_text_height = Label(window, textvariable=area_text_height).place(x=350, y=195, anchor="center")
+label_area_height = Entry(window, width=3)
+label_area_height.insert(END, '1')
+label_area_height.place(x=450, y=195, anchor="center")
+
+display_location = Label(window, textvariable=label_set_location).place(x=350, y=225, anchor="center")
+set_location = Label(window, textvariable=string_set_location).place(x=450, y=225, anchor="center")
 
 string_variable_x.set('Mouse X: ')
 string_variable_y.set('Mouse Y: ')
 label_set_location.set('Click location (f11): ')
 number_of_clicks.set('Number of clicks: ')
 interval_range.set('Interval Range: ')
+area_text_width.set('Spread of clicks width: ')
+area_text_height.set('Spread of clicks height: ')
 
 directions.set('press f11 to start clicker at cursor and f12 to stop clicker')
 
@@ -101,10 +115,24 @@ def set_mouse_label():
 
 
 def set_mouse_area(position):
-    # The spread of the clicks around the original position; might be CHANGEABLE by the user in the future
-    # MUST BE ODD, since we need the middle location to be the original set position
-    area_width = 21
-    area_height = 21
+    # The spread of the clicks around the original position
+
+    if int(label_area_width.get()) > 0:
+        if int(label_area_width.get()) % 2 == 0:
+            area_width = int(label_area_width.get()) + 1
+        else:
+            area_width = int(label_area_width.get())
+    else:
+        area_width = 1
+        print('it is 0 or a negative number, putting 1 instead')
+
+    if int(label_area_height.get()) > 0:
+        if int(label_area_height.get()) % 2 == 0:
+            area_height = int(label_area_height.get()) + 1
+        else:
+            area_height = int(label_area_height.get())
+    else:
+        area_height = 1
 
     # Placeholder for a shape of our height and width
     mouse_area = np.ndarray(shape=(area_height, area_width), dtype=tuple)
@@ -191,9 +219,9 @@ def start_clicks():
             break
 
         try:
-            coordinates = targeted_mouse_area[random.randint(0, 20), random.randint(0, 20)]
-        except TypeError:
-            coordinates = (1, 1)
+            coordinates = targeted_mouse_area[random.randint(0, int(label_area_height.get()) - 1), random.randint(0, int(label_area_width.get()) - 1)]
+        except ValueError:
+            coordinates = targeted_mouse_area[0, 0]
         ms.click(coordinates[0], coordinates[1], clicks=1, interval=random.uniform(interval_x, interval_y),
                  button='left', pause=0.1)
         print('clicked at {}'.format(coordinates))
